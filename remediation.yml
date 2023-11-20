@@ -1,0 +1,33 @@
+---
+- name: Remediate
+  hosts: rhel7
+  gather_facts: true
+  become: true
+  force_handlers: true
+  tasks:
+
+    - name: Configure sshd
+      ansible.builtin.lineinfile:
+        path: "/etc/ssh/sshd_config"
+        regex: "^(#)?"
+        line: " "
+        state: present
+      loop:
+        - {key: "PermitRootLogin", value: "prohibit-password"}
+        - {key: "PasswordAuthentication", value: "no"}
+      notify:
+        - Restart sshd
+
+    - name: Remove pam_pkcs11 module
+      ansible.builtin.shell: |
+        set -o pipefail
+        leapp answer --section remove_pam_pkcs11_module_check.confirm=True
+      args:
+        executable: /bin/bash
+      changed_when: true
+
+  handlers:
+    - name: "Restart sshd"
+      ansible.builtin.service:
+        name: sshd
+        state: restarted
