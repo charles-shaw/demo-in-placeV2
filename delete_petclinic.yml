@@ -1,0 +1,55 @@
+---
+- name: Pet Clinic application Removal
+  hosts: rhel7
+  gather_facts: true
+  become: false
+  pre_tasks:
+    - name: Populate service facts
+      ansible.builtin.service_facts:
+  tasks:
+    - name: Job spooling tools service stopped
+      ansible.builtin.service:
+        name: atd
+        enabled: false
+        state: stopped
+      become: true
+
+    - name: MariaDB database service stopped
+      ansible.builtin.service:
+        name: mariadb
+        enabled: false
+        state: stopped
+      become: true
+
+    - name: Middleware installed
+      ansible.builtin.yum:
+        name:
+          - at
+          - mariadb
+          - mariadb-server
+          - temurin-17-jdk
+        state: removed
+      become: true
+
+    - name: Gather package facts
+      ansible.builtin.package_facts:
+
+    - name: Port 8080/tcp enabled with firewalld
+      ansible.posix.firewalld:
+        port: 8080/tcp
+        state: enabled
+        permanent: true
+        immediate: true
+      become: true
+      when:
+        - ansible_os_family == 'RedHat'
+        - ansible_distribution_major_version|int >= 7
+        - ansible_facts.services['firewalld.service'] is defined and ansible_facts.services['firewalld.service'].state == 'running'
+        - ansible_facts.services['firewalld.service'] is defined and ansible_facts.services['firewalld.service'].status == 'enabled'
+
+    - name: Start on boot cron entry
+      ansible.builtin.cron:
+        name: Pet Clinic app start on boot
+        state: absent
+
+...
