@@ -6,7 +6,7 @@
   force_handlers: true
   tasks:
 
-    - name: Configure sshd
+    - name: Configure sshd - SUPER
       ansible.builtin.lineinfile:
         path: "/etc/ssh/sshd_config"
         regex: "^(#)?"
