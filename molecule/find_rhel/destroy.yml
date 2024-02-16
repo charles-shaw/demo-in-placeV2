@@ -1,3 +1,4 @@
+---
 - name: Destroy molecule containers
   hosts: molecule
   gather_facts: false
@@ -22,3 +23,4 @@
       ansible.builtin.file:
         path: "{{ molecule_ephemeral_directory }}/inventory/molecule_inventory.yml"
         state: absent
+...
